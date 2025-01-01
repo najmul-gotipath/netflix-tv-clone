@@ -34,7 +34,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _handleBackPress() {
-    if (pageController.page == 1) { // Movies page is the 2nd page, index 1
+    if (pageController.page == 1) {
+      // Movies page is the 2nd page, index 1
       setState(() {
         _isSidebarExpanded = true; // Expand the sidebar
       });
@@ -55,6 +56,9 @@ class _MyAppState extends State<MyApp> {
           body: Row(
             children: [
               CustomNavigationRail(
+                onNavigateToPage: (index) {
+                  pageController.jumpToPage(index);
+                },
                 focusNode: focusNode,
                 pageController: pageController,
                 isSidebarExpanded: _isSidebarExpanded,

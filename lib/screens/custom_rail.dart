@@ -7,6 +7,7 @@ class CustomNavigationRail extends StatefulWidget {
   final PageController pageController;
   final bool isSidebarExpanded;
   final Function(bool) onSidebarExpandedChanged;
+  final Function(int) onNavigateToPage;
 
   const CustomNavigationRail({
     super.key,
@@ -14,6 +15,7 @@ class CustomNavigationRail extends StatefulWidget {
     required this.pageController,
     required this.isSidebarExpanded,
     required this.onSidebarExpandedChanged,
+    required this.onNavigateToPage, 
   });
 
   @override
@@ -43,7 +45,7 @@ class _CustomNavigationRailState extends State<CustomNavigationRail> {
       canRequestFocus: true,
       onFocusChange: (hasFocus) {
         setState(() {
-          widget.onSidebarExpandedChanged(hasFocus); // Handle expansion
+          widget.onSidebarExpandedChanged(hasFocus); 
         });
       },
       onKey: (node, event) {
@@ -55,7 +57,8 @@ class _CustomNavigationRailState extends State<CustomNavigationRail> {
           _moveFocus(1);
           return KeyEventResult.handled;
         }
-        if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
+        if (event.isKeyPressed(LogicalKeyboardKey.select)) {
+          print("enter key pressed");
           _navigateToPage(_focusedIndex);
           return KeyEventResult.handled;
         }
@@ -88,15 +91,15 @@ class _CustomNavigationRailState extends State<CustomNavigationRail> {
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(10.0),
               ),
-              padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
               margin: const EdgeInsets.symmetric(vertical: 5.0),
               child: Row(
                 children: [
                   Icon(
                     item.icon,
-                    color: isSelected
-                        ? theme.colorScheme.secondary
-                        : Colors.white,
+                    color:
+                        isSelected ? theme.colorScheme.secondary : Colors.white,
                   ),
                   const SizedBox(width: 12.0),
                   if (widget.isSidebarExpanded)
@@ -120,21 +123,17 @@ class _CustomNavigationRailState extends State<CustomNavigationRail> {
 
   void _moveFocus(int direction) {
     setState(() {
-      _focusedIndex = (_focusedIndex + direction).clamp(0, _navItems.length - 1);
+      _focusedIndex =
+          (_focusedIndex + direction).clamp(0, _navItems.length - 1);
     });
-    widget.pageController.jumpToPage(_focusedIndex);
   }
 
   void _navigateToPage(int index) {
-    widget.pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    widget.onNavigateToPage(index);
   }
 }
 
-class NavigationItem{
+class NavigationItem {
   final String title;
   final IconData icon;
 

@@ -21,6 +21,10 @@ class _MoviesPageState extends State<MoviesPage> {
   late List<List<FocusNode>> focusNodes;
   late List<ScrollController> scrollControllers;
 
+  bool hasInitialFocus = false;
+
+  Map<int, int> lastFocusedIndex = {};
+
   @override
   void initState() {
     super.initState();
@@ -30,6 +34,11 @@ class _MoviesPageState extends State<MoviesPage> {
           movies[genres[sectionIndex]]!.length, (_) => FocusNode()),
     );
     scrollControllers = List.generate(genres.length, (_) => ScrollController());
+
+    // Initializing lastFocusedIndex with default values.
+    for (int i = 0; i < genres.length; i++) {
+      lastFocusedIndex[i] = 0;
+    }
   }
 
   @override
@@ -123,30 +132,38 @@ class _MoviesPageState extends State<MoviesPage> {
         onFocusChange: (isFocused) {
           if (isFocused) {
             _scrollToCenter(scrollController, itemIndex);
+            // Update the last focused index for this section.
+            lastFocusedIndex[sectionIndex] = itemIndex;
             setState(() {});
           }
         },
         onKey: (node, event) {
           if (event is RawKeyDownEvent) {
             if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-              if (!isLastItem && !isLastSection) {}
-              FocusScope.of(context)
-                  .requestFocus(focusNodes[sectionIndex][itemIndex + 1]);
-              return KeyEventResult.handled;
+              if (itemIndex < focusNodes[sectionIndex].length - 1) {
+                FocusScope.of(context)
+                    .requestFocus(focusNodes[sectionIndex][itemIndex + 1]);
+                return KeyEventResult.handled;
+              }
             } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-              if (itemIndex > 0) {}
-              FocusScope.of(context)
-                  .requestFocus(focusNodes[sectionIndex][itemIndex - 1]);
-              return KeyEventResult.handled;
+              if (itemIndex > 0) {
+                FocusScope.of(context)
+                    .requestFocus(focusNodes[sectionIndex][itemIndex - 1]);
+                return KeyEventResult.handled;
+              }
             } else if (event.logicalKey == LogicalKeyboardKey.arrowDown &&
-                !isLastSection) {
+                sectionIndex < genres.length - 1) {
+              // Move to the next section, focus the last remembered item.
+              int nextIndex = lastFocusedIndex[sectionIndex + 1] ?? 0;
               FocusScope.of(context)
-                  .requestFocus(focusNodes[sectionIndex + 1][itemIndex]);
+                  .requestFocus(focusNodes[sectionIndex + 1][nextIndex]);
               return KeyEventResult.handled;
             } else if (event.logicalKey == LogicalKeyboardKey.arrowUp &&
                 sectionIndex > 0) {
+              // Move to the previous section, focus the last remembered item.
+              int prevIndex = lastFocusedIndex[sectionIndex - 1] ?? 0;
               FocusScope.of(context)
-                  .requestFocus(focusNodes[sectionIndex - 1][itemIndex]);
+                  .requestFocus(focusNodes[sectionIndex - 1][prevIndex]);
               return KeyEventResult.handled;
             }
           }
